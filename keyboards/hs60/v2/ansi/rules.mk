@@ -34,3 +34,4 @@ SRC =	keyboards/wilba_tech/wt_main.c \
 
 RGBLIGHT_ENABLE = yes # underglow
 #BACKLIGHT_PIN = A6
+UNICODEMAP_ENABLE = yes
