@@ -108,18 +108,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // disable backlight after timeout in minutes, 0 = no timeout
 #define RGB_BACKLIGHT_DISABLE_AFTER_TIMEOUT 0
 
-// the default brightness
-#define RGB_BACKLIGHT_BRIGHTNESS 255
+// the default brightness (0-255)
+#define RGB_BACKLIGHT_BRIGHTNESS 40
 
-// the default effect (RGB test)
-#define RGB_BACKLIGHT_EFFECT 6
+// 1 results in a static color effect for the key backlighting
+#define RGB_BACKLIGHT_EFFECT 1
 
 // the default effect speed (0-3)
 #define RGB_BACKLIGHT_EFFECT_SPEED 0
 
 // the default color1 and color2
-#define RGB_BACKLIGHT_COLOR_1 { .h = 0, .s = 255 }
-#define RGB_BACKLIGHT_COLOR_2 { .h = 127, .s = 255 }
+//
+// RED
+// #define RGB_BACKLIGHT_COLOR_1 { .h = 0, .s = 255 }
+// #define RGB_BACKLIGHT_COLOR_2 { .h = 127, .s = 255 }
+//
+// WHITE
+//
+#define RGB_BACKLIGHT_COLOR_1 { .h = 0, .s = 0 }
+#define RGB_BACKLIGHT_COLOR_2 { .h = 0, .s = 0 }
 
 #define DRIVER_COUNT 2
 #define DRIVER_LED_TOTAL 64

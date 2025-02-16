@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
+// #include "drivers/issi/is31fl3733.h"
+#include "wilba_tech/wt_rgb_backlight.h"
 
 
 enum custom_keycodes {
@@ -85,24 +87,83 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
+static uint32_t time_until_sleep_ms = 600000; // 10 minutes
+static uint32_t last_keypress_time = 0;
+static bool sleeping_active = false;
+
+static bool underglow_initiated = false;
+static uint32_t underglow_init_time = -1;
+static uint32_t time_until_underglow_ms = 5000; // 5 seconds
+
 void matrix_init_user(void) {
+    underglow_init_time = timer_read32();
 }
 
-void matrix_scan_user(void) {
-  //user matrix
-}
-
-bool layer_used = false;
 
 
 /**
- * @brief Custom key event processing w/ mod switch/Escape on CAPSLOCK
+ * @brief Runs continuously in the background, in a loop
+ */
+void matrix_scan_user(void) {
+
+    if (!underglow_initiated) {
+        uint32_t current_time = timer_read32();
+        uint32_t passed_time = current_time - last_keypress_time;
+        if (passed_time > time_until_underglow_ms) {
+            rgblight_mode(40);
+            underglow_initiated = true;
+        }
+    }
+
+    if (!sleeping_active){
+        uint32_t current_time = timer_read32();
+        uint32_t passed_time = current_time - last_keypress_time;
+        if (passed_time > time_until_sleep_ms) {
+            sleeping_active = true;
+
+            // Decrease backlight effect (to off)
+            backlight_effect_decrease();
+
+            // Disable Underglow
+            rgblight_disable();
+        }
+    }
+}
+
+/**
+ * @brief Stores whether a key was used used when "CAPS_MO" key was pressed
+ */
+static bool layer_used = false;
+
+
+/**
+ * @brief Custom key event processing for custom sleep mode and "CAPS_MO" key
  *
  * @param keycode The key code
  * @param record The key record
  * @return true if the key event was processed, false otherwise
  */
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    // Handle custom sleep mode
+    if (record->event.pressed) {
+        last_keypress_time = timer_read32();
+        if (sleeping_active) {
+            sleeping_active = false;
+
+            // Increase backlight effect (to static)
+            backlight_effect_increase();
+
+            // Enable Underglow
+            rgblight_enable();
+            rgblight_mode(40);
+
+            // Do not further process the wake up key event
+            return false;
+        }
+    }
+
+    // Handle Layer 1 Switch / Escape with "CAPS_MO" key
     switch (keycode) {
         case CAPS_MO:
             if (record->event.pressed) {
@@ -125,6 +186,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void eeconfig_init_user(void) {
+    // Set Mac OS as the default unicode input mode
     set_unicode_input_mode(UC_MAC);
 }
 
